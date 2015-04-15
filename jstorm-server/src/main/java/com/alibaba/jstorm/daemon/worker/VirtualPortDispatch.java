@@ -59,7 +59,6 @@ public class VirtualPortDispatch extends DisruptorRunable {
 			
 		}
 		recvConnection = null;
-		Metrics.unregister(null, MetricDef.DISPATCH_QUEUE,  null, Metrics.MetricType.WORKER);
 		LOG.info("Successfully shudown VirtualPortDispatch");
 	}
 

@@ -88,12 +88,10 @@ public class MainPage implements Serializable {
 
 		} catch (Exception e) {
 			String errorInfo = e.getMessage();
-            if (errorInfo != null) {
-			    if (errorInfo.indexOf("No alive nimbus") == -1) {
-			        LOG.error("Failed to get cluster information:", e);
-			        throw e;
-			    }
-            }
+			if (errorInfo.indexOf("No alive nimbus") == -1) {
+			    LOG.error("Failed to get cluster information:", e);
+			    throw e;
+			}
 		} finally {
 			if (client != null) {
 				client.close();

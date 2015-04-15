@@ -10,6 +10,7 @@ import com.alibaba.jstorm.daemon.worker.WorkerData;
 import com.alibaba.jstorm.utils.IntervalCheck;
 import com.alibaba.jstorm.utils.JStormUtils;
 import com.alibaba.jstorm.utils.RandomRange;
+import com.esotericsoftware.minlog.Log;
 
 /**
  * 
@@ -17,7 +18,7 @@ import com.alibaba.jstorm.utils.RandomRange;
  * @author zhongyan.feng
  * @version 
  */
-public class MkLocalFirst extends Shuffer {
+public class MkLocalFirst {
 	private static final Logger LOG = Logger.getLogger(MkLocalFirst.class);
 
 	private List<Integer> allOutTasks;
@@ -30,7 +31,6 @@ public class MkLocalFirst extends Shuffer {
 
 	public MkLocalFirst(List<Integer> workerTasks, List<Integer> allOutTasks,
 			WorkerData workerData) {
-	    super(workerData);
 
 		intervalCheck = new IntervalCheck();
 		intervalCheck.setInterval(60);
@@ -99,14 +99,10 @@ public class MkLocalFirst extends Shuffer {
 		randomrange = new RandomRange(outTasks.size());
 	}
 
-	private List<Integer> innerGroup(List<Object> values) {		
-		int index = getActiveTask(randomrange, outTasks);
-        // If none active tasks were found, still send message to a task
-        if (index == -1)
-            index = randomrange.nextInt();
+	private List<Integer> innerGroup(List<Object> values) {
+		int index = randomrange.nextInt();
 
-        return JStormUtils.mk_list(outTasks.get(index));
-
+		return JStormUtils.mk_list(outTasks.get(index));
 	}
 
 	public List<Integer> grouper(List<Object> values) {

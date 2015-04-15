@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import backtype.storm.Config;
-import backtype.storm.Constants;
 import backtype.storm.generated.Bolt;
 import backtype.storm.generated.ComponentCommon;
 import backtype.storm.generated.ComponentObject;
@@ -24,7 +23,6 @@ import backtype.storm.generated.SpoutSpec;
 import backtype.storm.generated.StateSpoutSpec;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.generated.StreamInfo;
-import backtype.storm.metric.SystemBolt;
 import backtype.storm.spout.ShellSpout;
 import backtype.storm.task.IBolt;
 import backtype.storm.task.ShellBolt;
@@ -306,11 +304,7 @@ public class Common {
 	 * @param num_tasks
 	 * @param ret
 	 */
-	public static void add_acker(Map stormConf, StormTopology ret) {
-		String key = Config.TOPOLOGY_ACKER_EXECUTORS;
-
-		Integer ackerNum = JStormUtils.parseInt(stormConf.get(key), 0);
-
+	public static void add_acker(Integer ackerNum, StormTopology ret) {
 		// generate outputs
 		HashMap<String, StreamInfo> outputs = new HashMap<String, StreamInfo>();
 		ArrayList<String> fields = new ArrayList<String>();
@@ -325,7 +319,8 @@ public class Common {
 		Map<GlobalStreamId, Grouping> inputs = acker_inputs(ret);
 
 		// generate acker which will be stored in topology
-		Bolt acker_bolt = Thrift.mkBolt(inputs, ackerbolt, outputs, ackerNum);
+		Bolt acker_bolt = Thrift.mkAckerBolt(inputs, ackerbolt, outputs,
+				ackerNum);
 
 		// add every bolt two output stream
 		// ACKER_ACK_STREAM_ID/ACKER_FAIL_STREAM_ID
@@ -418,75 +413,19 @@ public class Common {
 		}
 	}
 
-	public static StormTopology add_system_components(StormTopology topology) {
-		// generate inputs
-		Map<GlobalStreamId, Grouping> inputs = new HashMap<GlobalStreamId, Grouping>();
-
-		// generate outputs
-		HashMap<String, StreamInfo> outputs = new HashMap<String, StreamInfo>();
-		ArrayList<String> fields = new ArrayList<String>();
-
-		outputs.put(Constants.SYSTEM_TICK_STREAM_ID,
-				Thrift.outputFields(JStormUtils.mk_list("rate_secs")));
-		outputs.put(Constants.METRICS_TICK_STREAM_ID,
-				Thrift.outputFields(JStormUtils.mk_list("interval")));
-		outputs.put(Constants.CREDENTIALS_CHANGED_STREAM_ID,
-				Thrift.outputFields(JStormUtils.mk_list("creds")));
-
-		ComponentCommon common = new ComponentCommon(inputs, outputs);
-
-		IBolt ackerbolt = new SystemBolt();
-
-		Bolt bolt = Thrift.mkBolt(inputs, ackerbolt, outputs,
-				Integer.valueOf(0));
-
-		topology.put_to_bolts(Constants.SYSTEM_COMPONENT_ID, bolt);
-
-		add_system_streams(topology);
-
-		return topology;
-
-	}
-
-	public static StormTopology add_metrics_component(StormTopology topology) {
-
-		/**
-		 * @@@ TODO Add metrics consumer bolt
-		 */
-		//		(defn metrics-consumer-bolt-specs [storm-conf topology]
-		//				  (let [component-ids-that-emit-metrics (cons SYSTEM-COMPONENT-ID (keys (all-components topology)))
-		//				        inputs (->> (for [comp-id component-ids-that-emit-metrics]
-		//				                      {[comp-id METRICS-STREAM-ID] :shuffle})
-		//				                    (into {}))
-		//				        
-		//				        mk-bolt-spec (fn [class arg p]
-		//				                       (thrift/mk-bolt-spec*
-		//				                        inputs
-		//				                        (backtype.storm.metric.MetricsConsumerBolt. class arg)
-		//				                        {} :p p :conf {TOPOLOGY-TASKS p}))]
-		//				    
-		//				    (map
-		//				     (fn [component-id register]           
-		//				       [component-id (mk-bolt-spec (get register "class")
-		//				                                   (get register "argument")
-		//				                                   (or (get register "parallelism.hint") 1))])
-		//				     
-		//				     (metrics-consumer-register-ids storm-conf)
-		//				     (get storm-conf TOPOLOGY-METRICS-CONSUMER-REGISTER))))
-		return topology;
-	}
-
 	@SuppressWarnings("rawtypes")
 	public static StormTopology system_topology(Map storm_conf,
 			StormTopology topology) throws InvalidTopologyException {
 
 		StormTopology ret = topology.deepCopy();
 
-		add_acker(storm_conf, ret);
+		String key = Config.TOPOLOGY_ACKER_EXECUTORS;
 
-		add_metrics_component(ret);
+		Integer ackercount = JStormUtils.parseInt(storm_conf.get(key), 0);
 
-		add_system_components(ret);
+		add_acker(ackercount, ret);
+
+		add_system_streams(ret);
 
 		return ret;
 	}

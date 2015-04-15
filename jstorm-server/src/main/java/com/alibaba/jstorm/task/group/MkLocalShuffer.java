@@ -3,18 +3,16 @@ package com.alibaba.jstorm.task.group;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alibaba.jstorm.daemon.worker.WorkerData;
 import com.alibaba.jstorm.utils.JStormUtils;
 import com.alibaba.jstorm.utils.RandomRange;
 
-public class MkLocalShuffer extends Shuffer{
+public class MkLocalShuffer {
 
 	private List<Integer> outTasks;
 	private RandomRange randomrange;
 	private boolean isLocal;
 
-	public MkLocalShuffer(List<Integer> workerTasks, List<Integer> allOutTasks, WorkerData workerData) {
-	    super(workerData);
+	public MkLocalShuffer(List<Integer> workerTasks, List<Integer> allOutTasks) {
 		List<Integer> localOutTasks = new ArrayList<Integer>();
 
 		for (Integer outTask : allOutTasks) {
@@ -36,10 +34,7 @@ public class MkLocalShuffer extends Shuffer{
 	}
 
 	public List<Integer> grouper(List<Object> values) {
-		int index = getActiveTask(randomrange, outTasks);
-		// If none active tasks were found, still send message to a task
-		if (index == -1)
-		    index = randomrange.nextInt();
+		int index = randomrange.nextInt();
 
 		return JStormUtils.mk_list(outTasks.get(index));
 	}

@@ -22,7 +22,6 @@ import com.alibaba.jstorm.ui.UIUtils;
 import com.alibaba.jstorm.utils.FileAttribute;
 import com.alibaba.jstorm.utils.HttpserverUtils;
 import com.alibaba.jstorm.utils.JStormUtils;
-import com.alibaba.jstorm.utils.NetWorkUtils;
 
 /**
  * task log view page service. <br />
@@ -159,7 +158,7 @@ public class ListLogPage implements Serializable {
 	private void listLogs() {
 
 		// PROXY_URL = "http://%s:%s/logview?%s=%s&dir=%s";
-		String url = String.format(PROXY_URL, NetWorkUtils.host2Ip(host), port,
+		String url = String.format(PROXY_URL, host, port,
 				HttpserverUtils.HTTPSERVER_LOGVIEW_PARAM_CMD,
 				HttpserverUtils.HTTPSERVER_LOGVIEW_PARAM_CMD_LIST,
 				HttpserverUtils.HTTPSERVER_LOGVIEW_PARAM_DIR, parent);

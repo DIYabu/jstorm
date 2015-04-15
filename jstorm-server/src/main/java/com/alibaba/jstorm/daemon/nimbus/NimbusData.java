@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -63,8 +62,6 @@ public class NimbusData {
 	private final boolean localMode;
 	
 	private volatile boolean isLeader;
-	
-	private AtomicBoolean isShutdown = new AtomicBoolean(false);
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public NimbusData(Map conf, TimeCacheMap<Object, Object> downloaders,
@@ -190,13 +187,7 @@ public class NimbusData {
 			// TODO Auto-generated catch block
 
 		}
-		try {
-			scheduExec.shutdown();
-		}catch(Exception e) {
-		}
-		
-		uploaders.cleanup();
-		downloaders.cleanup();
+		scheduExec.shutdown();
 	}
 
 	public INimbus getInimubs() {
@@ -225,10 +216,6 @@ public class NimbusData {
 
 	public void setLeader(boolean isLeader) {
 		this.isLeader = isLeader;
-	}
-
-	public AtomicBoolean getIsShutdown() {
-		return isShutdown;
 	}
 
 }

@@ -34,7 +34,7 @@ public class ZkTool {
 			return null;
 		}
 
-		Object obj = Utils.deserialize(data, null);
+		Object obj = Utils.deserialize(data);
 
 		return obj.toString();
 	}

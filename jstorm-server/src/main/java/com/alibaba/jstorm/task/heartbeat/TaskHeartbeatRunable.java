@@ -18,7 +18,6 @@ import com.alibaba.jstorm.task.TaskStatus;
 import com.alibaba.jstorm.task.UptimeComputer;
 import com.alibaba.jstorm.utils.JStormUtils;
 import com.alibaba.jstorm.utils.TimeUtils;
-import com.alibaba.jstorm.task.TaskInfo;
 
 /**
  * Task hearbeat

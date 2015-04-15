@@ -102,7 +102,9 @@ public class MemoryMapState<T> implements Snapshottable<T>, ITupleCollection, Ma
         Long currTx;
 
         public MemoryMapStateBacking(String id) {
-            _dbs.putIfAbsent(id, new HashMap());
+            if (!_dbs.containsKey(id)) {
+                _dbs.put(id, new HashMap());
+            }
             this.db = (Map<List<Object>, T>) _dbs.get(id);
         }
 

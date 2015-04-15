@@ -17,8 +17,6 @@ import backtype.storm.utils.Utils;
  */
 public class list {
 	
-	
-	
 
 	/**
 	 * @param args
@@ -32,16 +30,17 @@ public class list {
 			client = NimbusClient.getConfiguredClient(conf);
 			
 			if (args.length > 0 && StringUtils.isBlank(args[0]) == false) {
-				String topologyName = args[0];
-				TopologyInfo info = client.getClient().getTopologyInfoByName(topologyName);
+				String topologyId = args[0];
+				TopologyInfo info = client.getClient().getTopologyInfo(topologyId);
 				
 				System.out.println("Successfully get topology info \n"
-						+ Utils.toPrettyJsonString(info));
+						+ info.toString());
 			}else {
 				ClusterSummary clusterSummary = client.getClient().getClusterInfo();
 				
+
 				System.out.println("Successfully get cluster info \n"
-						+ Utils.toPrettyJsonString(clusterSummary));
+						+ clusterSummary.toString());
 			}
 
 			

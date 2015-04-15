@@ -143,7 +143,7 @@ public class Cluster {
 		if (data == null) {
 			return null;
 		}
-		return Utils.deserialize(data, null);
+		return Utils.deserialize(data);
 	}
 
 	@SuppressWarnings("rawtypes")

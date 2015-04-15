@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 
 import backtype.storm.Config;
-import backtype.storm.Constants;
 import backtype.storm.task.IBolt;
 import backtype.storm.task.IOutputCollector;
 import backtype.storm.task.OutputCollector;
@@ -15,10 +14,9 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.utils.DisruptorQueue;
 import backtype.storm.utils.WorkerClassLoader;
 
-import com.alibaba.jstorm.daemon.worker.timer.RotatingMapTrigger;
-import com.alibaba.jstorm.daemon.worker.timer.TickTupleTrigger;
-import com.alibaba.jstorm.metric.JStormTimer;
+import com.alibaba.jstorm.daemon.worker.TimeTick;
 import com.alibaba.jstorm.metric.MetricDef;
+import com.alibaba.jstorm.metric.JStormTimer;
 import com.alibaba.jstorm.metric.Metrics;
 import com.alibaba.jstorm.stats.CommonStatsRolling;
 import com.alibaba.jstorm.task.TaskStatus;
@@ -92,24 +90,12 @@ public class BoltExecutors extends BaseExecutors implements EventHandler {
 
 		boltExeTimer = Metrics.registerTimer(idStr, MetricDef.EXECUTE_TIME, 
 				String.valueOf(taskId), Metrics.MetricType.TASK);
-		
-		Object tickFrequence = storm_conf.get(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS);
-		if (tickFrequence != null) {
-			Integer frequence = JStormUtils.parseInt(tickFrequence);
-			TickTupleTrigger tickTupleTrigger = new TickTupleTrigger(
-					sysTopologyCxt, frequence, 
-					idStr + Constants.SYSTEM_TICK_STREAM_ID, exeQueue);
-			tickTupleTrigger.register();
-		}
+		TimeTick.registerTimer(idStr + "-sampling-tick", exeQueue);
 
 		try {
 			// do prepare
 			WorkerClassLoader.switchThreadContext();
-			
-//			Method method = IBolt.class.getMethod("prepare", new Class[] {Map.class, TopologyContext.class,
-//					OutputCollector.class});
-//			method.invoke(bolt, new Object[] {storm_conf, userTopologyCxt, outputCollector});
-			bolt.prepare(storm_conf, userTopologyCtx, outputCollector);
+			bolt.prepare(storm_conf, userTopologyCxt, outputCollector);
 
 		} catch (Throwable e) {
 			error = e;
@@ -159,7 +145,7 @@ public class BoltExecutors extends BaseExecutors implements EventHandler {
 
 		try {
 
-			if (event instanceof RotatingMapTrigger.Tick) {
+			if (event instanceof TimeTick.Tick) {
 				// don't check the timetick name to improve performance
 				
 				Map<Tuple, Long> timeoutMap = tuple_start_times.rotate();

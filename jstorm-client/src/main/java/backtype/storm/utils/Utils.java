@@ -2,10 +2,7 @@ package backtype.storm.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
@@ -34,9 +31,6 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.thrift7.TException;
 import org.json.simple.JSONValue;
 import org.yaml.snakeyaml.Yaml;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import backtype.storm.Config;
 import backtype.storm.generated.ComponentCommon;
@@ -107,13 +101,6 @@ public class Utils {
 			//return JSON.parse(json);
 			return JSONValue.parse(json);
 		}
-	}
-	
-	public static String toPrettyJsonString(Object obj) {
-		Gson gson2 = new GsonBuilder().setPrettyPrinting().create();
-		String ret = gson2.toJson(obj);
-		
-		return  ret;
 	}
 
 	public static <T> String join(Iterable<T> coll, String sep) {
@@ -236,34 +223,15 @@ public class Utils {
 		
 		conf.putAll(replaceMap);
 	}
-	
-	public static Map loadDefinedConf(String confFile) {
-		File file = new File(confFile);
-		if (file.exists() == false) {
-			return findAndReadConfigFile(confFile, true);
-		}
-		
-		Yaml yaml = new Yaml();
-		Map ret;
-		try {
-			ret = (Map) yaml.load(new FileReader(file));
-		} catch (FileNotFoundException e) {
-			ret = null;
-		}
-		if (ret == null)
-			ret = new HashMap();
-
-		return new HashMap(ret);
-	}
 
 	public static Map readStormConfig() {
 		Map ret = readDefaultConfig();
 		String confFile = System.getProperty("storm.conf.file");
 		Map storm;
-		if (StringUtils.isBlank(confFile) == true) {
+		if (confFile == null || confFile.equals("")) {
 			storm = findAndReadConfigFile("storm.yaml", false);
 		} else {
-			storm = loadDefinedConf(confFile);
+			storm = findAndReadConfigFile(confFile, true);
 		}
 		ret.putAll(storm);
 		ret.putAll(readCommandLineOpts());
@@ -576,17 +544,6 @@ public class Utils {
 	public static String normalize_path(String path) {
 		String rtn = toks_to_path(tokenize_path(path));
 		return rtn;
-	}
-	
-	public static String printStack() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("\nCurrent call stack:\n");
-		StackTraceElement[] stackElements= Thread.currentThread().getStackTrace();
-		for (int i = 2; i < stackElements.length; i++) {
-			sb.append("\t").append(stackElements[i]).append("\n");
-        }
-		
-		return sb.toString();
 	}
 	
 }

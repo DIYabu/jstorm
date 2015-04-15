@@ -124,7 +124,7 @@ public class DisruptorQueueImpl extends DisruptorQueue {
 			LOG.error(e.getCause(), e);
 			throw new RuntimeException(e);
 		} catch (InterruptedException e) {
-			LOG.error("InterruptedException " + e.getCause());
+			LOG.error(e.getCause(), e);
 			// throw new RuntimeException(e);
 			return null;
 		} catch (TimeoutException e) {
@@ -149,7 +149,7 @@ public class DisruptorQueueImpl extends DisruptorQueue {
 			LOG.error(e.getCause(), e);
 			throw new RuntimeException(e);
 		} catch (InterruptedException e) {
-			LOG.error("InterruptedException " + e.getCause());
+			LOG.error(e.getCause(), e);
 			return;
 		}catch (TimeoutException e) {
 			LOG.error(e.getCause(), e);
@@ -180,7 +180,7 @@ public class DisruptorQueueImpl extends DisruptorQueue {
 				}
 			} catch (InterruptedException e) {
 				// throw new RuntimeException(e);
-				LOG.error(e.getCause());
+				LOG.error(e.getCause(), e);
 				return;
 			} catch (Exception e) {
 				LOG.error(e.getCause(), e);
@@ -246,6 +246,7 @@ public class DisruptorQueueImpl extends DisruptorQueue {
 
 		writeLock.lock();
 		consumerStartedFlag = true;
+
 		
 		writeLock.unlock();
 	}

@@ -91,8 +91,6 @@ public class restart {
 		try {
 			Map conf = Utils.readStormConfig();
 			client = NimbusClient.getConfiguredClient(conf);
-			
-			System.out.println("It will take 15 ~ 100 seconds to restart, please wait patiently\n");
 
 			if (args.length == 1) {
 				client.getClient().restart(topologyName, null);

@@ -65,12 +65,11 @@ class Heartbeat extends RunnableCallback {
 				.get(Config.SUPERVISOR_HEARTBEAT_FREQUENCY_SECS));
 
 		initSupervisorInfo(conf);
-		
-		LOG.info("Successfully init supervisor heartbeat thread, " + supervisorInfo);
 	}
 
 	private void initSupervisorInfo(Map conf) {
-		List<Integer> portList = JStormUtils.getSupervisorPortList(conf);
+		List<Integer> portList = (List<Integer>) conf
+				.get(Config.SUPERVISOR_SLOTS_PORTS);
 
 		if (!StormConfig.local_mode(conf)) {
 			Set<Integer> ports = JStormUtils.listToSet(portList);

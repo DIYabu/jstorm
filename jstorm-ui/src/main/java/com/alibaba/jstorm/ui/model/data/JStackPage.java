@@ -18,7 +18,6 @@ import com.alibaba.jstorm.client.ConfigExtension;
 import com.alibaba.jstorm.ui.UIUtils;
 import com.alibaba.jstorm.utils.HttpserverUtils;
 import com.alibaba.jstorm.utils.JStormUtils;
-import com.alibaba.jstorm.utils.NetWorkUtils;
 
 
 @ManagedBean(name = "jstackpage")
@@ -99,7 +98,7 @@ public class JStackPage implements Serializable {
 	private void queryLog(Map conf) {
 		// PROXY_URL = "http://%s:%s/logview?%s=%s&%s=%s";
 		String baseUrl = String
-				.format(PROXY_URL, NetWorkUtils.host2Ip(host), port,
+				.format(PROXY_URL, host, port,
 						HttpserverUtils.HTTPSERVER_LOGVIEW_PARAM_CMD,
 						HttpserverUtils.HTTPSERVER_LOGVIEW_PARAM_CMD_JSTACK,
 						HttpserverUtils.HTTPSERVER_LOGVIEW_PARAM_WORKER_PORT,

@@ -18,7 +18,6 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.RotatingMap;
 import backtype.storm.utils.Utils;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,9 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.lang.builder.ToStringBuilder;
-
 import storm.trident.spout.IBatchID;
 
 public class TridentBoltExecutor implements IRichBolt {
@@ -54,34 +51,15 @@ public class TridentBoltExecutor implements IRichBolt {
             return new CoordType(false);
         }
 
-       @Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + (singleCount ? 1231 : 1237);
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			CoordType other = (CoordType) obj;
-			if (singleCount != other.singleCount)
-				return false;
-			return true;
-		}
+        @Override
+        public boolean equals(Object o) {
+            return singleCount == ((CoordType) o).singleCount;
+        }        
         
         @Override
         public String toString() {
             return "<Single: " + singleCount + ">";
         }
-
-		
     }
     
     public static class CoordSpec implements Serializable {

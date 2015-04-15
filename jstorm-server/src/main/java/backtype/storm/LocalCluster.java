@@ -1,6 +1,5 @@
 package backtype.storm;
 
-import java.util.Enumeration;
 import java.util.Map;
 
 import org.apache.log4j.BasicConfigurator;
@@ -17,37 +16,15 @@ import backtype.storm.generated.SubmitOptions;
 import backtype.storm.generated.TopologyInfo;
 import backtype.storm.utils.Utils;
 
-import com.alibaba.jstorm.utils.JStormUtils;
-
 public class LocalCluster implements ILocalCluster {
 
 	public static Logger LOG = Logger.getLogger(LocalCluster.class);
 
 	private LocalClusterMap state;
 
-	protected void setLogger() {
-		boolean needReset = true;
-		Logger rootLogger = Logger.getRootLogger();
-		if (rootLogger != null) {
-			Enumeration appenders = rootLogger.getAllAppenders();
-			if (appenders.hasMoreElements() == true) {
-				needReset = false;
-			}
-		}
-
-		if (needReset == true) {
-			BasicConfigurator.configure();
-			rootLogger.setLevel(Level.INFO);
-		}
-
-	}
-
 	public LocalCluster() {
-		setLogger();
-		
-		// fix in zk occur Address family not supported by protocol family: connect
-		System.setProperty("java.net.preferIPv4Stack", "true");
-		
+		BasicConfigurator.configure();
+		Logger.getRootLogger().setLevel(Level.INFO);
 		this.state = LocalUtils.prepareLocalCluster();
 		if (this.state == null)
 			throw new RuntimeException("prepareLocalCluster error");
@@ -65,8 +42,6 @@ public class LocalCluster implements ILocalCluster {
 		// TODO Auto-generated method stub
 		if (!Utils.isValidConf(conf))
 			throw new RuntimeException("Topology conf is not json-serializable");
-		JStormUtils.setLocalMode(true);
-		
 		try {
 			if (submitOpts == null) {
 				state.getNimbus().submitTopology(topologyName, null,
@@ -87,10 +62,7 @@ public class LocalCluster implements ILocalCluster {
 	public void killTopology(String topologyName) {
 		// TODO Auto-generated method stub
 		try {
-			// kill topology quickly
-			KillOptions killOps = new KillOptions();
-			killOps.set_wait_secs(0);
-			state.getNimbus().killTopologyWithOpts(topologyName, killOps);
+			state.getNimbus().killTopology(topologyName);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			LOG.error("fail to kill Topology " + topologyName, e);
@@ -149,9 +121,6 @@ public class LocalCluster implements ILocalCluster {
 	@Override
 	public void shutdown() {
 		// TODO Auto-generated method stub
-		// in order to avoid kill topology's command competition
-		// it take 10 seconds to remove topology's node
-		JStormUtils.sleepMs(10 * 1000);
 		this.state.clean();
 	}
 

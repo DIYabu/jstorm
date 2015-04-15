@@ -21,7 +21,7 @@ public class DisruptorTest {
 
 	static {
 		DisruptorQueue.setUseSleep(true);
-		DisruptorQueue.setLimited(true);
+		DisruptorQueue.setLimited(false);
 	}
 
 	private int count = 100000000;

@@ -20,9 +20,6 @@ import com.alibaba.jstorm.cluster.StormClusterState;
 import com.alibaba.jstorm.schedule.default_assign.ResourceWorkerSlot;
 import com.alibaba.jstorm.task.Assignment;
 import com.alibaba.jstorm.utils.JStormUtils;
-import com.alibaba.jstorm.utils.TimeUtils;
-import com.alibaba.jstorm.task.TaskInfo;
-import com.alibaba.jstorm.task.heartbeat.TaskHeartbeat;
 
 /**
  * 
@@ -58,8 +55,6 @@ public class RefreshConnections extends RunnableCallback {
 	private Integer frequence;
 
 	private String supervisorId;
-	
-	private int taskTimeoutSecs;
 
 	// private ReentrantReadWriteLock endpoint_socket_lock;
 
@@ -81,9 +76,6 @@ public class RefreshConnections extends RunnableCallback {
 		// this.endpoint_socket_lock = endpoint_socket_lock;
 		frequence = JStormUtils.parseInt(
 				conf.get(Config.TASK_REFRESH_POLL_SECS), 5);
-		
-		taskTimeoutSecs = JStormUtils.parseInt(conf.get(Config.TASK_HEARTBEAT_FREQUENCY_SECS), 10);
-		taskTimeoutSecs = taskTimeoutSecs*3;
 	}
 
 	@Override
@@ -177,19 +169,6 @@ public class RefreshConnections extends RunnableCallback {
 				for (WorkerSlot node_port : remove_connections) {
 					LOG.info("Remove connection to " + node_port);
 					nodeportSocket.remove(node_port).close();
-				}
-				
-				// Update the status of all outbound tasks
-				for (Integer taskId : outboundTasks) {
-					boolean isActive = false;
-					int currentTime = TimeUtils.current_time_secs();
-					TaskHeartbeat tHB = zkCluster.task_heartbeat(topologyId, taskId);
-					if (tHB != null) {
-					    int taskReportTime = tHB.getTimeSecs();
-					    if ((currentTime - taskReportTime) < taskTimeoutSecs)
-						    isActive = true;
-					}
-				    workerData.updateOutboundTaskStatus(taskId, isActive);
 				}
 			}
 		} catch (Exception e) {

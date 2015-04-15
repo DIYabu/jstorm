@@ -3,6 +3,7 @@ package backtype.storm.utils;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,8 +18,6 @@ public class WorkerClassLoader extends URLClassLoader {
 
 	private ClassLoader JDKClassLoader;
 
-	private boolean isDebug;
-
 	protected static WorkerClassLoader instance;
 
 	protected static boolean enable;
@@ -26,73 +25,56 @@ public class WorkerClassLoader extends URLClassLoader {
 	protected static Map<Thread, ClassLoader> threadContextCache;
 
 	protected WorkerClassLoader(URL[] urls, ClassLoader defaultClassLoader,
-			ClassLoader JDKClassLoader, boolean isDebug) {
-		super(urls, JDKClassLoader);
+			ClassLoader JDKClassLoader) {
+		super(urls, defaultClassLoader);
 		this.defaultClassLoader = defaultClassLoader;
 		this.JDKClassLoader = JDKClassLoader;
-		this.isDebug = isDebug;
-
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public Class<?> loadClass(String name) throws ClassNotFoundException {
 		Class<?> result = null;
-		try {
-			result = this.findLoadedClass(name);
 
-			if (result != null) {
-				return result;
-			} 
+		result = this.findLoadedClass(name);
 
-			try {
-				result = JDKClassLoader.loadClass(name);
-				if (result != null)
-					return result;
-			} catch (Exception e) {
-
-			}
-
-			try {
-				if (name.startsWith("org.apache.log4j") == false
-						&& name.startsWith("backtype.storm") == false
-						&& name.startsWith("com.alibaba.jstorm") == false) {
-					result = findClass(name);
-
-					if (result != null) {
-						return result;
-					}
-				}
-
-			} catch (Exception e) {
-
-			}
-
-			result = defaultClassLoader.loadClass(name);
+		if (result != null && result.getClassLoader() == this) {
 			return result;
-
-		} finally {
-			if (result != null) {
-				ClassLoader resultClassLoader = result.getClassLoader();
-				LOG.info("Successfully load class " + name + " by "
-						+ resultClassLoader + ",threadContextLoader:"
-						+ Thread.currentThread().getContextClassLoader());
-			} else {
-				LOG.warn("Failed to load class " + name
-						+ ",threadContextLoader:"
-						+ Thread.currentThread().getContextClassLoader());
-			}
-			
-			if (isDebug) {
-				LOG.info(Utils.printStack());
-			}
+		} else {
+			result = null;
 		}
 
+		try {
+			result = JDKClassLoader.loadClass(name);
+			if (result != null)
+				return result;
+		} catch (Exception e) {
+
+		}
+
+		try {
+			if (name.startsWith("org.slf4j") == false
+					&& name.startsWith("org.apache.log4j") == false
+					&& name.startsWith("ch.qos.logback") == false
+					&& name.startsWith("backtype.storm") == false
+					&& name.startsWith("com.alibaba.jstorm") == false) {
+				result = findClass(name);
+
+				if (result != null) {
+					return result;
+				}
+			}
+
+		} catch (Exception e) {
+
+		}
+
+		return defaultClassLoader.loadClass(name);
 	}
 
 	public static WorkerClassLoader mkInstance(URL[] urls,
 			ClassLoader DefaultClassLoader, ClassLoader JDKClassLoader,
-			boolean enable, boolean isDebug) {
+			boolean enable) {
 		WorkerClassLoader.enable = enable;
 		if (enable == false) {
 			LOG.info("Don't enable UserDefine ClassLoader");
@@ -102,7 +84,7 @@ public class WorkerClassLoader extends URLClassLoader {
 		synchronized (WorkerClassLoader.class) {
 			if (instance == null) {
 				instance = new WorkerClassLoader(urls, DefaultClassLoader,
-						JDKClassLoader, isDebug);
+						JDKClassLoader);
 
 				threadContextCache = new ConcurrentHashMap<Thread, ClassLoader>();
 			}

@@ -102,7 +102,7 @@ public class LocalClusterMap {
 					PathUtils.rmr(dir);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					LOG.error("Fail to delete " + dir);
+					LOG.error("fail to delete " + dir, e);
 				}
 			}
 		}
